@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "Elena Candellone" }]
-dependencies = ["matplotlib>=3.8", "numpy>=1.24", "seaborn>=0.13"]
+dependencies = ["matplotlib>=3.7", "numpy>=1.24", "seaborn>=0.13"]
 
 [project.optional-dependencies]
 test = ["pytest>=8"]

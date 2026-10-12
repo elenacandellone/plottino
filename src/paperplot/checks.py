@@ -444,6 +444,8 @@ def _size(fig, j, width, w, h, issues):
         else:
             target = w
     scale = target / w
+    if abs(scale - 1) < 0.005:   # the canvas rounds the figure to whole pixels
+        scale = 1.0
     if h * scale > j.max_height * 1.001:
         issues.append(Issue('size', 'error',
                             f'printed height {h * scale:.2f} in exceeds the {j.name} maximum {j.max_height:.2f} in'))
@@ -559,10 +561,10 @@ def _check_font_size(j, texts, scale, issues, **_):
     for t in texts:
         if _ignored(t.text, 'font_size'):
             continue
-        size = t.text.get_fontsize() * scale
-        if size < j.min_font - 1e-6:
+        size = round(t.text.get_fontsize() * scale, 2)   # rounding: 9.0000001 pt is 9 pt
+        if size < j.min_font:
             small.setdefault(round(size, 1), []).append(t)
-        elif size > j.max_font + 1e-6:
+        elif size > j.max_font:
             large.setdefault(round(size, 1), []).append(t)
     for size, ts in sorted(small.items()):
         issues.append(Issue('font_size', 'error',

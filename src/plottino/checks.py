@@ -453,7 +453,7 @@ def _size(fig, j, width, w, h, issues):
 
 
 def _check_text_overlap(texts, tol, issues, **_):
-    seen_tick_axes = set()
+    crowded = {}   # (tick role, axes) -> the overlapping tick labels: one message per crowded axis
     for i, a in enumerate(texts):
         for b in texts[i + 1:]:
             if _ignored(a.text, 'text_overlap') or _ignored(b.text, 'text_overlap'):
@@ -461,16 +461,15 @@ def _check_text_overlap(texts, tol, issues, **_):
             if not a.bbox.overlaps(b.bbox) or not _polys_overlap(a.poly, b.poly, tol):
                 continue
             if a.kind == b.kind == 'tick' and a.desc.split('"')[0] == b.desc.split('"')[0]:
-                key = (a.desc.split('"')[0], a.desc.rsplit('(', 1)[-1])
-                if key in seen_tick_axes:
-                    continue   # one message per crowded axis
-                seen_tick_axes.add(key)
-                issues.append(Issue('text_overlap', 'error',
-                                    f'{a.desc.split(chr(34))[0].strip()}s overlap in {key[1].rstrip(")")}: '
-                                    'use fewer ticks, rotate them or widen the panel',
-                                    [Bbox.union([a.bbox, b.bbox])]))
+                key = (a.desc.split('"')[0].strip(), a.desc.rsplit('(', 1)[-1].rstrip(')'))
+                crowded.setdefault(key, {})
+                crowded[key][id(a)], crowded[key][id(b)] = a.bbox, b.bbox
                 continue
             issues.append(Issue('text_overlap', 'error', f'{a.desc} overlaps {b.desc}', [a.bbox, b.bbox]))
+    for (role, where), boxes in crowded.items():
+        issues.append(Issue('text_overlap', 'error',
+                            f'{len(boxes)} {role}s overlap in {where}: use fewer ticks, rotate them, '
+                            'swap the axes or widen the panel', [Bbox.union(list(boxes.values()))]))
 
 
 def _check_text_clipped(texts, tol, issues, canvas, tight, **_):

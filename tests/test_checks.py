@@ -43,7 +43,7 @@ def test_overlapping_tick_labels():
     ax.set_xlabel('Category'), ax.set_ylabel('Count')
     report = pt.check(fig)
     msgs = [i for i in report if i.check == 'text_overlap']
-    assert len(msgs) == 1 and 'tick labels overlap' in msgs[0].message
+    assert len(msgs) == 1 and 'x tick labels overlap' in msgs[0].message
 
 
 def test_rotated_tick_labels_do_not_false_positive():

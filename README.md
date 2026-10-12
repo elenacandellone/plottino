@@ -17,14 +17,57 @@ ax.set(xlabel='Year', ylabel='Value (EUR)')
 pt.save(fig, 'plots/fig1')             # checks, then writes fig1.pdf and fig1.png
 ```
 
+## Before and after
+
+Left: figures as they often start, with the problems plottino boxes and numbers. Right: the
+same data after following its report; these pass the check. All images are shown at the same
+width, as they would print. Made by [examples/readme_figures.py](examples/readme_figures.py).
+
+### Crowded labels
+
+| Before | After |
+|:---:|:---:|
+| <img src="docs/img/labels_before.png" width="400"> | <img src="docs/img/labels_after.png" width="400"> |
+
 ```
-plottino check: Science, figure 4.76 x 2.38 in
-  x error   text_overlap     x tick labels overlap in axes 0: use fewer ticks, rotate them or widen the panel
+plottino check: Science, figure 2.24 x 1.80 in
+  x error   text_overlap     6 x tick labels overlap in axes 0: use fewer ticks, rotate them, swap the axes or widen the panel
+```
+
+Long category names fit as horizontal bars, where they have room to be read.
+
+### Legend on the data, colours colour-blind readers cannot tell apart
+
+| Before | After |
+|:---:|:---:|
+| <img src="docs/img/legend_before.png" width="400"> | <img src="docs/img/legend_after.png" width="400"> |
+
+```
+plottino check: LaTeX (345pt text, 10pt font), figure 2.39 x 1.79 in
   ! warning legend_over_data the legend covers data in axes 0: move it (loc=, bbox_to_anchor=) or label the lines directly
-  ! warning colors           #d62728 and #2ca02c look alike with deuteranopia (dE 4.1 < 6): change one, or add markers, line styles or direct labels
-  1 error, 2 warnings
-  problem areas boxed in plots/fig1.check.png
+  ! warning colors           #d62728 and #2ca02c look alike with deuteranopia (dE 3.9 < 6): change one, or add markers, line styles or direct labels
+  i info    labels           y label "value_eur" of axes 0 looks like a variable name; write it for the reader, with units
 ```
+
+The default palette (Okabe-Ito) is safe for colour blindness, `pt.label_lines(ax)` replaces
+the legend with labels at the end of each line, and the axis labels are written for the reader.
+
+### A figure made at screen size, then shrunk into a column
+
+| Before | After |
+|:---:|:---:|
+| <img src="docs/img/shrunk_before.png" width="400"> | <img src="docs/img/shrunk_after.png" width="400"> |
+
+```
+plottino check: PNAS, figure 7.00 x 4.50 in, printed at 3.43 in wide
+  x error   font_size        14 text(s) print at 4.9 pt, below the PNAS minimum 6 pt: e.g. x tick label "A" (axes 0); ...
+  ! warning size             width 7.00 in will be scaled to 3.43 in (single), by 49%; fonts and lines are checked at that scale
+  ! warning line_width       axis lines print at 0.39 pt, thinner than the PNAS minimum 0.5 pt (axes 0)
+```
+
+A figure tuned on screen at 7 in wide, in matplotlib's default style, is shrunk by half to fit
+a column, and every font and line with it. `pt.figure('single')` makes the figure at the column width, so
+the sizes set are the sizes printed.
 
 ## LaTeX / Overleaf documents
 

@@ -669,12 +669,47 @@ def _check_more_rules(fig, j, texts, issues):
             issues.append(Issue('journal_rules', 'warning',
                                 f'{j.name} asks for no coloured text (use keys or keylines): {_examples(coloured)}',
                                 [t.bbox for t in coloured]))
+    pairs = [('no_red_green', 'red and green', _is_red, _is_green),
+             ('no_blue_yellow', 'dark blue and yellow', _is_dark_blue, _is_yellow)]
+    if any(rule in rules for rule, *_ in pairs):
+        used = list(dict.fromkeys(to_hex(to_rgba(c)[:3]) for ax in axes for a in _data_artists(ax)
+                                  for c in _artist_colors(a) if to_rgba(c)[3] > 0.1))
+        for rule, what, first, second in pairs:
+            a_, b_ = [c for c in used if first(c)], [c for c in used if second(c)]
+            if rule in rules and a_ and b_:
+                issues.append(Issue('journal_rules', 'warning',
+                                    f'{j.name} asks not to use {what} together: {a_[0]} with {b_[0]}'))
     panel = [t for t in texts if t.text.get_gid() == PANEL_LABEL_GID]
     wrong = [t for t in panel if (t.text.get_text().isupper() if j.panel_label_case == 'lower'
                                   else t.text.get_text().islower())]
     if wrong:
         issues.append(Issue('journal_rules', 'info', f'{j.name} panel letters are {j.panel_label_case}case: '
                             f'{", ".join(t.text.get_text() for t in wrong)}', [t.bbox for t in wrong]))
+
+
+def _lch(c):
+    L, a, b = pcolors.oklab(c)
+    return L, float(np.hypot(a, b)), float(np.degrees(np.arctan2(b, a)) % 360)
+
+
+def _is_red(c):
+    L, C, h = _lch(c)
+    return C > 0.08 and (h < 38 or h > 345)
+
+
+def _is_green(c):
+    L, C, h = _lch(c)
+    return C > 0.06 and 115 <= h <= 165
+
+
+def _is_dark_blue(c):
+    L, C, h = _lch(c)
+    return C > 0.06 and 225 <= h <= 285 and L < 0.6
+
+
+def _is_yellow(c):
+    L, C, h = _lch(c)
+    return C > 0.08 and 85 <= h <= 115 and L > 0.75
 
 
 def _examples(ts, n=3):

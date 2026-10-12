@@ -105,7 +105,7 @@ that become too small.
 | `colors` | data colours hard to tell apart, with normal vision or simulated protanopia, deuteranopia or tritanopia |
 | `colormap` | rainbow colormaps (jet, hsv, ...) |
 | `labels` | axes without labels, labels like `mean_auc_score`, several series without a legend |
-| `journal_rules` | the journal's house rules: Science: no figure title in the image, no minor ticks; Nature: axis lines and ticks, no gridlines, no coloured text; both: units in axis labels, panel letters in the right case |
+| `journal_rules` | the journal's house rules: Science: no figure title in the image, no minor ticks, no red with green, no dark blue with yellow; Nature: axis lines and ticks, no gridlines, no coloured text; Cell: no figure title in the image, no red with green; all: units in axis labels, panel letters in the right case |
 
 Checks run on what matplotlib actually draws, so they work on any matplotlib or seaborn
 figure. Use them directly:
@@ -138,7 +138,7 @@ guidelines change, so check them before submitting.
 | Science Advances | 9 / 14.4 (max) / 18.4 cm, max height 9 in | 8 pt (6-8) | 9 pt bold, A B C | 0.28 pt | [figure guide 2026](https://www.science.org/cms/asset/76887697-528f-4a22-afea-cee904504e76/sciadv_guide_to_preparing_figures_2026.pdf) |
 | Nature | 89 / 183 mm, max height 170 mm | 5-7 pt | 8 pt bold, a b c | 0.25 pt | [specifications](https://research-figure-guide.nature.com/figures/preparing-figures-our-specifications/) |
 | PNAS | 8.7 / 11.4 / 17.8 cm, max height 22.5 cm | 6-8 pt | not specified | 0.25 pt | [digital art guidelines 2022](https://www.pnas.org/pb-assets/authors/digitalart-1675347574760.pdf) |
-| Cell | 85 / 114 / 174 mm | >= 6 pt | | 0.5 pt | secondary sources, not yet checked against Cell |
+| Cell | 85 / 114 / 174 mm (3-column journals: 55 / 114 / 174), max height 20 cm | 6-8 pt | capitals, A B C | 0.5 pt | [figure guidelines](https://www.cell.com/information-for-authors/figure-guidelines) |
 
 Add your own with `pt.journals.register('mykey', pt.Journal(...))`.
 

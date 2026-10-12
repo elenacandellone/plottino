@@ -338,3 +338,23 @@ def test_nature_rules():
     ax.spines['left'].set_visible(False)
     msgs = ' | '.join(i.message for i in pt.check(fig) if i.check == 'journal_rules')
     assert 'no background gridlines' in msgs and 'axis lines and tick marks' in msgs
+
+
+def test_red_green_and_blue_yellow_rules():
+    def fig_with(colors, journal):
+        pt.use(journal, seaborn=False)
+        fig, ax = pt.figure('single')
+        for k, c in enumerate(colors):
+            ax.plot([0, 1], [k, k + 1], color=c)
+        ax.set(xlabel='Time (s)', ylabel='Signal (V)')
+        return [i.message for i in pt.check(fig) if i.check == 'journal_rules']
+    assert any('red and green' in m for m in fig_with(['#d62728', '#2ca02c'], 'cell'))
+    assert not any('red and green' in m for m in fig_with(['#eb6834', '#0072B2'], 'cell'))   # orange is not red
+    assert any('dark blue and yellow' in m for m in fig_with(['#0072B2', '#F0E442'], 'science'))
+    assert not any('dark blue and yellow' in m for m in fig_with(['#0072B2', '#F0E442'], 'cell'))
+
+
+def test_cell_preset():
+    j = pt.journals.get('cell')
+    assert j.width('single') == pytest.approx(85 / 25.4) and j.width('third') == pytest.approx(55 / 25.4)
+    assert j.fonts == ('Arial',) and 'no_figure_title' in j.rules and j.min_linewidth == 0.5

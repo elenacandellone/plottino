@@ -27,7 +27,7 @@ class Journal:
     min_marker: float = 0.0          # pt, smallest symbol (marker) size; 0 = not checked
     rules: tuple = ()                # house rules, see checks._check_journal_rules: 'no_figure_title',
                                      # 'no_minor_ticks', 'no_gridlines', 'axis_lines', 'units_in_labels',
-                                     # 'no_colored_text'
+                                     # 'no_colored_text', 'no_red_green', 'no_blue_yellow'
     dpi: int = 600                   # raster export resolution
     source: str = ''
     notes: str = ''
@@ -48,7 +48,7 @@ class Journal:
 _SCIENCE_FAMILY = dict(
     min_font=6.0, font_size=8.0, max_font=8.0, min_linewidth=0.28, panel_label_size=9.0, min_marker=5.0,
     fonts=('Myriad Pro', 'Arial', 'Helvetica', 'DejaVu Sans'), panel_label_case='upper',
-    rules=('no_figure_title', 'no_minor_ticks', 'units_in_labels'), dpi=600,
+    rules=('no_figure_title', 'no_minor_ticks', 'units_in_labels', 'no_red_green', 'no_blue_yellow'), dpi=600,
 )
 
 JOURNALS = {
@@ -94,11 +94,15 @@ JOURNALS = {
     ),
     'cell': Journal(
         name='Cell',
-        widths={'single': 85 * MM, 'onehalf': 114 * MM, 'double': 174 * MM},
-        max_height=230 * MM, min_font=6.0, font_size=7.0, max_font=12.0, min_linewidth=0.5,
-        fonts=('Arial', 'Helvetica', 'DejaVu Sans'), panel_label_case='upper', dpi=1000,
-        source='https://www.cell.com/figureguidelines',
-        notes='Arial/Helvetica, 6-8 pt tick labels; 1000 dpi for line art',
+        widths={'single': 85 * MM, 'onehalf': 114 * MM, 'double': 174 * MM, 'third': 55 * MM},
+        max_height=200 * MM, min_font=6.0, font_size=7.0, max_font=8.0, min_linewidth=0.5,
+        fonts=('Arial',), panel_label_case='upper', dpi=1000, rules=('no_figure_title', 'no_red_green'),
+        source='https://www.cell.com/information-for-authors/figure-guidelines',
+        notes='2-column formats: 8.5 / 11.4 / 17.4 cm; 3-column formats (previews, commentaries): 5.5 (third) / '
+              '11.4 / 17.4 cm; STAR Protocols 13.4 / 17.2 cm; recommended max 6.5 x 8 in (16.5 x 20 cm); Arial only, '
+              'embedded; text about 6-8 pt; capital panel letters; lines 0.5-1.5 pt; raster 300 dpi colour, 500 dpi '
+              'black and white, 1000 dpi line art; RGB; no red with green; titles and legends not in the image; '
+              'grey fills >= 20 % apart, 10-80 % grey; plot individual points with mean +/- error',
     ),
     'generic': Journal(
         name='Generic',

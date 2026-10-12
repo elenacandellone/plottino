@@ -3,6 +3,7 @@ import string
 
 import numpy as np
 
+from .checks import PANEL_LABEL_GID
 from .colors import GREY
 from .style import current_journal
 
@@ -11,13 +12,15 @@ def panel_labels(axes, labels=None, x=-0.12, y=1.04, case=None, fontsize=None, *
     """Put bold panel letters (A, B, ... or a, b, ...) at the top-left of each axes.
 
     case: 'upper' or 'lower' (default: the journal's convention). x, y are in axes fractions.
+    fontsize: default the journal's panel-letter size (e.g. 9 pt for Science, 8 pt for Nature).
     """
     j = current_journal()
     axes = list(np.ravel(axes))
     if labels is None:
         letters = string.ascii_uppercase if (case or j.panel_label_case) == 'upper' else string.ascii_lowercase
         labels = letters[:len(axes)]
-    style = dict(fontsize=fontsize or j.font_size + 1, fontweight='bold', va='bottom', ha='left')
+    style = dict(fontsize=fontsize or j.panel_label_size or j.font_size + 1, fontweight='bold',
+                 va='bottom', ha='left', gid=PANEL_LABEL_GID)
     style.update(kwargs)
     return [ax.text(x, y, lab, transform=ax.transAxes, **style) for ax, lab in zip(axes, labels)]
 

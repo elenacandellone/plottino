@@ -31,10 +31,10 @@ def rc(journal='generic', declutter=True) -> dict:
         'font.family': 'sans-serif',
         'font.sans-serif': [_available_font(j.fonts), *j.fonts],
         'font.size': s,
-        'axes.titlesize': s + 1, 'axes.labelsize': s,
+        'axes.titlesize': min(s + 1, j.max_font), 'axes.labelsize': s,
         'xtick.labelsize': s, 'ytick.labelsize': s,
         'legend.fontsize': s, 'legend.title_fontsize': s,
-        'figure.titlesize': s + 1,
+        'figure.titlesize': min(s + 1, j.max_font),
         'axes.linewidth': lw, 'grid.linewidth': lw,
         'xtick.major.width': lw, 'ytick.major.width': lw,
         'xtick.minor.width': lw, 'ytick.minor.width': lw,
@@ -55,7 +55,7 @@ def rc(journal='generic', declutter=True) -> dict:
             'axes.spines.top': False, 'axes.spines.right': False,
             'text.color': TEXT, 'axes.labelcolor': TEXT, 'axes.edgecolor': TEXT,
             'xtick.color': TEXT, 'ytick.color': TEXT,
-            'axes.grid': True, 'grid.color': LIGHT, 'axes.axisbelow': True,
+            'axes.grid': 'no_gridlines' not in j.rules, 'grid.color': LIGHT, 'axes.axisbelow': True,
         })
     return params
 

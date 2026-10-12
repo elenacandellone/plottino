@@ -59,10 +59,9 @@ the legend with labels at the end of each line, and the axis labels are written 
 | <img src="docs/img/shrunk_before.png" width="400"> | <img src="docs/img/shrunk_after.png" width="400"> |
 
 ```
-plottino check: PNAS, figure 7.00 x 4.50 in, printed at 3.43 in wide
+plottino check: PNAS, figure 7.00 x 4.50 in, printed at 3.42 in wide
   x error   font_size        14 text(s) print at 4.9 pt, below the PNAS minimum 6 pt: e.g. x tick label "A" (axes 0); ...
-  ! warning size             width 7.00 in will be scaled to 3.43 in (single), by 49%; fonts and lines are checked at that scale
-  ! warning line_width       axis lines print at 0.39 pt, thinner than the PNAS minimum 0.5 pt (axes 0)
+  ! warning size             width 7.00 in will be scaled to 3.42 in (single), by 49%; fonts and lines are checked at that scale
 ```
 
 A figure tuned on screen at 7 in wide, in matplotlib's default style, is shrunk by half to fit
@@ -101,10 +100,12 @@ that become too small.
 | `font_size` | text below the journal minimum at print size (above its maximum: info) |
 | `font_family` | text not in the journal's fonts (info) |
 | `line_width` | lines, ticks and axes thinner than the journal minimum at print size |
+| `marker_size` | symbols smaller than the journal minimum (Science: 5 pt) |
 | `contrast` | text whose colour is too close to its background (WCAG ratio < 3) |
 | `colors` | data colours hard to tell apart, with normal vision or simulated protanopia, deuteranopia or tritanopia |
 | `colormap` | rainbow colormaps (jet, hsv, ...) |
 | `labels` | axes without labels, labels like `mean_auc_score`, several series without a legend |
+| `journal_rules` | the journal's house rules: Science: no figure title in the image, no minor ticks; Nature: axis lines and ticks, no gridlines, no coloured text; both: units in axis labels, panel letters in the right case |
 
 Checks run on what matplotlib actually draws, so they work on any matplotlib or seaborn
 figure. Use them directly:
@@ -127,15 +128,17 @@ canvas and reports the resulting scale, e.g. a 6 pt footnote that prints at 5.7 
 
 ## Journal presets
 
-`science`, `nature`, `pnas`, `cell`, `generic`, plus `pt.latex(...)` for any LaTeX document.
-Each preset records its source page: guidelines change, so check them before submitting.
+`science`, `sciadv` (Science Advances), `nature`, `pnas`, `cell`, `generic`, plus `pt.latex(...)`
+for any LaTeX document. Each preset records its source (`pt.journals.get('nature').source`):
+guidelines change, so check them before submitting.
 
-| | widths | text | min line |
-|---|---|---|---|
-| Science | 5.7 / 12.1 / 18.4 cm | >= 6 pt | 0.5 pt |
-| Nature | 89 / 183 mm, max height 170 mm | 5-7 pt | 0.25 pt |
-| PNAS | 8.7 / 11.4 / 17.8 cm | 6-8 pt | 0.5 pt |
-| Cell | 85 / 114 / 174 mm | >= 6 pt | 0.5 pt |
+| | widths | text | panel letters | min line | source |
+|---|---|---|---|---|---|
+| Science | 5.7 / 12.1 / 18.4 cm | 8 pt (6-8) | 9 pt bold, A B C | 0.28 pt | [widths](https://www.science.org/content/page/instructions-preparing-initial-manuscript), [figure guide 2026](https://www.science.org/cms/asset/76887697-528f-4a22-afea-cee904504e76/sciadv_guide_to_preparing_figures_2026.pdf) |
+| Science Advances | 9 / 14.4 (max) / 18.4 cm, max height 9 in | 8 pt (6-8) | 9 pt bold, A B C | 0.28 pt | [figure guide 2026](https://www.science.org/cms/asset/76887697-528f-4a22-afea-cee904504e76/sciadv_guide_to_preparing_figures_2026.pdf) |
+| Nature | 89 / 183 mm, max height 170 mm | 5-7 pt | 8 pt bold, a b c | 0.25 pt | [specifications](https://research-figure-guide.nature.com/figures/preparing-figures-our-specifications/) |
+| PNAS | 8.7 / 11.4 / 17.8 cm, max height 22.5 cm | 6-8 pt | not specified | 0.25 pt | [digital art guidelines 2022](https://www.pnas.org/pb-assets/authors/digitalart-1675347574760.pdf) |
+| Cell | 85 / 114 / 174 mm | >= 6 pt | | 0.5 pt | secondary sources, not yet checked against Cell |
 
 Add your own with `pt.journals.register('mykey', pt.Journal(...))`.
 

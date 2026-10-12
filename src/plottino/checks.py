@@ -13,6 +13,10 @@ render), at the size the figure will be printed. Checks:
     line_width      lines thinner than the journal minimum
     contrast        text colour too close to its background
     colors          data colours hard to tell apart, with normal vision or colour blindness
+    marker_size     symbols smaller than the journal minimum (journals that set one)
+    journal_rules   house rules of the journal (Journal.rules): no figure title in the image, no
+                    minor ticks, no gridlines, axis lines and ticks present, units in axis labels,
+                    no coloured text; panel letters in the journal's case
     colormap        rainbow colormaps (jet, hsv, ...)
     labels          axes without labels, labels that look like variable names, several
                     labelled series without a legend
@@ -36,10 +40,12 @@ from .style import current_journal
 
 SEVERITIES = ('error', 'warning', 'info')
 ALL_CHECKS = ('size', 'text_overlap', 'text_clipped', 'text_over_data', 'legend_over_data',
-              'font_size', 'font_family', 'line_width', 'contrast', 'colors', 'colormap', 'labels')
+              'font_size', 'font_family', 'line_width', 'marker_size', 'contrast', 'colors', 'colormap',
+              'labels', 'journal_rules')
 RAINBOW_CMAPS = {'jet', 'rainbow', 'hsv', 'gist_rainbow', 'nipy_spectral', 'gist_ncar', 'prism',
                  'flag', 'spectral', 'gist_stern'}
 HIGHLIGHT_GID = 'plottino-highlight'
+PANEL_LABEL_GID = 'plottino-panel-label'   # set by panel_labels(); held to the journal's panel-letter size
 
 
 @dataclass
@@ -413,8 +419,7 @@ def check(fig=None, journal=None, width=None, checks=None, skip=(), tolerance=0.
                           issues if 'size' in run else [])
     ctx = dict(fig=fig, j=j, texts=texts, dpi=dpi, tol=tol, scale=scale, issues=issues, renderer=renderer,
                canvas=canvas, tight=tight)
-    for name in ('text_overlap', 'text_clipped', 'text_over_data', 'legend_over_data', 'font_size',
-                 'font_family', 'line_width', 'contrast', 'colors', 'colormap', 'labels'):
+    for name in ALL_CHECKS[1:]:
         if name in run:
             globals()[f'_check_{name}'](**ctx)
     report = Report(fig, j, target, issues, (canvas.width / dpi, canvas.height / dpi))
@@ -561,6 +566,11 @@ def _check_font_size(j, texts, scale, issues, **_):
         if _ignored(t.text, 'font_size'):
             continue
         size = round(t.text.get_fontsize() * scale, 2)   # rounding: 9.0000001 pt is 9 pt
+        if t.text.get_gid() == PANEL_LABEL_GID and j.panel_label_size:
+            if abs(size - j.panel_label_size) > 0.05:
+                issues.append(Issue('font_size', 'info', f'panel letter "{t.text.get_text()}" prints at {size:g} pt; '
+                                    f'{j.name} asks for {j.panel_label_size:g} pt bold', [t.bbox]))
+            continue
         if size < j.min_font:
             small.setdefault(round(size, 1), []).append(t)
         elif size > j.max_font:
@@ -573,6 +583,98 @@ def _check_font_size(j, texts, scale, issues, **_):
         issues.append(Issue('font_size', 'info',
                             f'{len(ts)} text(s) print at {size:g} pt, above the usual {j.name} maximum '
                             f'{j.max_font:g} pt: e.g. {_examples(ts)}', [t.bbox for t in ts]))
+
+
+def _check_marker_size(fig, j, scale, issues, **_):
+    """Symbols (line markers, scatter points) below the journal's minimum size, in points."""
+    if not j.min_marker:
+        return
+    small = {}
+    for ax in fig.axes:
+        if not ax.get_visible():
+            continue
+        for a in _data_artists(ax):
+            if _ignored(a, 'marker_size'):
+                continue
+            if isinstance(a, Line2D) and a.get_marker() not in (None, 'None', '', ' ') and len(a.get_xydata()):
+                sizes = [a.get_markersize()]
+            elif isinstance(a, PathCollection) and len(a.get_offsets()):
+                sizes = np.sqrt(a.get_sizes())   # scatter s is the area in pt^2
+            else:
+                continue
+            for d in set(np.round(np.asarray(sizes, float) * scale, 1)):
+                if 0 < d < j.min_marker:
+                    small.setdefault(d, set()).add(_axes_name(fig, ax))
+    for d, where in sorted(small.items()):
+        issues.append(Issue('marker_size', 'warning',
+                            f'symbols print at {d:g} pt, below the {j.name} minimum {j.min_marker:g} pt '
+                            f'({", ".join(sorted(where))}): enlarge them (markersize= / s=)'))
+
+
+def _check_journal_rules(fig, j, texts, issues, **_):
+    if 'no_minor_ticks' in j.rules:
+        where = [_axes_name(fig, ax) for ax in fig.axes if ax.get_visible() and any(
+            len(axis.get_minorticklocs()) and axis.get_minor_ticks()
+            and axis.get_minor_ticks()[0].tick1line.get_visible()
+            and axis.get_minor_ticks()[0].tick1line.get_markersize() > 0 for axis in (ax.xaxis, ax.yaxis))]
+        if where:
+            issues.append(Issue('journal_rules', 'warning',
+                                f'{j.name} asks for no minor ticks ({", ".join(where)}): ax.minorticks_off()'))
+    if 'no_figure_title' in j.rules:
+        tops = [ax.get_position().y1 for ax in fig.axes if ax.get_visible()]
+        top = max(tops) if tops else 0
+        H = fig.bbox.height
+        titles = [t for t in texts if t.kind == 'figure' and t.text.get_gid() != PANEL_LABEL_GID
+                  and t.bbox.y0 / H >= top - 0.01 and not _ignored(t.text, 'journal_rules')]
+        if titles:
+            issues.append(Issue('journal_rules', 'warning',
+                                f'{j.name} asks for no figure title in the image (it goes in the caption): '
+                                f'{_examples(titles)}', [t.bbox for t in titles]))
+    _check_more_rules(fig, j, texts, issues)
+
+
+def _check_more_rules(fig, j, texts, issues):
+    rules = set(j.rules)
+    axes = [ax for ax in fig.axes if ax.get_visible() and ax.axison and _data_artists(ax)]
+    if 'no_gridlines' in rules:
+        where = [_axes_name(fig, ax) for ax in axes if any(
+            t.gridline.get_visible() for axis in (ax.xaxis, ax.yaxis) for t in axis.get_major_ticks()[:1])]
+        if where:
+            issues.append(Issue('journal_rules', 'warning', f'{j.name} asks for no background gridlines '
+                                f'({", ".join(where)}): ax.grid(False)'))
+    if 'axis_lines' in rules:
+        where = []
+        for ax in axes:
+            for axis, side in ((ax.xaxis, 'bottom'), (ax.yaxis, 'left')):
+                ticks = axis.get_major_ticks()
+                has_ticks = ticks and ticks[0].tick1line.get_visible() and ticks[0].tick1line.get_markersize() > 0
+                if axis.get_ticklabels() and (not ax.spines[side].get_visible() or not has_ticks):
+                    where.append(f'{side} of {_axes_name(fig, ax)}')
+        if where:
+            issues.append(Issue('journal_rules', 'warning', f'{j.name} asks for axis lines and tick marks: '
+                                f'missing at the {"; ".join(where)}'))
+    if 'units_in_labels' in rules:
+        bare = list(dict.fromkeys(
+            axis.label.get_text() for ax in axes for axis in (ax.xaxis, ax.yaxis)
+            if axis.label.get_text() and _numeric_ticks(axis)
+            and not re.search(r'\(.+\)|\[.+\]', axis.label.get_text())))
+        if bare:
+            issues.append(Issue('journal_rules', 'info',
+                                f'axis labels without units: {", ".join(f"{_short(b)!r}" for b in bare)}; '
+                                f'{j.name} asks for "Quantity (unit)" (ignore for dimensionless quantities)'))
+    if 'no_colored_text' in rules:
+        coloured = [t for t in texts if pcolors.chroma(to_hex(to_rgba(t.text.get_color())[:3])) > 0.03
+                    and t.text.get_gid() != HIGHLIGHT_GID and not _ignored(t.text, 'journal_rules')]
+        if coloured:
+            issues.append(Issue('journal_rules', 'warning',
+                                f'{j.name} asks for no coloured text (use keys or keylines): {_examples(coloured)}',
+                                [t.bbox for t in coloured]))
+    panel = [t for t in texts if t.text.get_gid() == PANEL_LABEL_GID]
+    wrong = [t for t in panel if (t.text.get_text().isupper() if j.panel_label_case == 'lower'
+                                  else t.text.get_text().islower())]
+    if wrong:
+        issues.append(Issue('journal_rules', 'info', f'{j.name} panel letters are {j.panel_label_case}case: '
+                            f'{", ".join(t.text.get_text() for t in wrong)}', [t.bbox for t in wrong]))
 
 
 def _examples(ts, n=3):

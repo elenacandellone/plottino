@@ -268,3 +268,73 @@ def test_label_lines_stay_inside_axes():
     ax.set(xlabel='Threshold', ylabel='Recall')
     report = pt.check(fig)
     assert 'text_over_data' not in checks_found(report) and 'text_overlap' not in checks_found(report), report
+
+
+def test_science_family_presets():
+    sci, adv = pp_journal('science'), pp_journal('Science Advances')
+    assert adv.width('single') == pytest.approx(3.5417, abs=1e-3)    # 21p3
+    assert adv.width('double') == pytest.approx(7.25)                # 43p6
+    assert adv.width('onehalf') == pytest.approx(5.6667, abs=1e-3)   # 34p
+    for j in (sci, adv):
+        assert (j.font_size, j.min_font, j.min_linewidth, j.panel_label_size, j.min_marker) == (8, 6, 0.28, 9, 5)
+
+
+def pp_journal(name):
+    return pt.journals.get(name)
+
+
+def test_small_markers():
+    pt.use('sciadv', seaborn=False)
+    fig, ax = pt.figure('single')
+    ax.scatter([0, 1, 2], [0, 1, 0], s=9)          # 3 pt across
+    ax.plot([0, 1, 2], [1, 0, 1], marker='o', markersize=6)
+    ax.set(xlabel='x (m)', ylabel='y (m)')
+    msgs = [i.message for i in pt.check(fig) if i.check == 'marker_size']
+    assert len(msgs) == 1 and '3 pt' in msgs[0]
+
+
+def test_science_rules_title_and_minor_ticks():
+    pt.use('sciadv', seaborn=False)
+    fig, ax = pt.figure('single')
+    ax.plot([1, 10, 100], [1, 2, 3])
+    ax.set_xscale('log')                            # log axes get minor ticks
+    ax.set(xlabel='Dose (mg)', ylabel='Response (a.u.)')
+    fig.suptitle('Response rises with dose')
+    msgs = [i.message for i in pt.check(fig) if i.check == 'journal_rules']
+    assert any('minor ticks' in m for m in msgs) and any('figure title' in m for m in msgs)
+    ax.minorticks_off()
+    fig._suptitle.remove(); fig._suptitle = None
+    assert 'journal_rules' not in checks_found(pt.check(fig))
+    # other journals have no such rules
+    fig2, ax2 = clean_figure()
+    fig2.suptitle('A title')
+    assert 'journal_rules' not in checks_found(pt.check(fig2, journal='pnas', width='double'))
+
+
+def test_panel_labels_use_journal_size():
+    pt.use('science', seaborn=False)
+    fig, axes = pt.figure('double', ncols=2)
+    for ax in axes:
+        ax.plot([0, 1], [0, 1]); ax.set(xlabel='x (m)', ylabel='y (m)')
+    labels = pt.panel_labels(axes)
+    assert [t.get_fontsize() for t in labels] == [9, 9]
+    assert not any(i.check == 'font_size' for i in pt.check(fig))   # 9 pt allowed for panel letters only
+    labels[0].set_fontsize(12)
+    assert any('panel letter' in i.message for i in pt.check(fig))
+
+
+def test_nature_rules():
+    pt.use('nature', seaborn=False)
+    fig, ax = pt.figure('single')
+    assert not ax.xaxis.get_major_ticks()[0].gridline.get_visible()   # the Nature style has no grid
+    ax.plot([0, 1, 2], [0, 1, 4], label='model')
+    ax.set(xlabel='Time (s)', ylabel='Distance')                       # y has no unit
+    ax.text(1, 3, 'model', color='#0072B2')                            # coloured text
+    pt.panel_labels([ax], ['A'], x=-0.2)                               # Nature uses lowercase
+    msgs = ' | '.join(i.message for i in pt.check(fig) if i.check == 'journal_rules')
+    assert 'no coloured text' in msgs and 'without units' in msgs and 'lowercase' in msgs
+    assert 'gridlines' not in msgs and 'axis lines' not in msgs
+    ax.grid(True)
+    ax.spines['left'].set_visible(False)
+    msgs = ' | '.join(i.message for i in pt.check(fig) if i.check == 'journal_rules')
+    assert 'no background gridlines' in msgs and 'axis lines and tick marks' in msgs

@@ -53,7 +53,7 @@ def save(fig, path, formats=None, dpi=None, journal=None, width=None, run_check=
             if fmt not in VECTOR:
                 kw.setdefault('dpi', dpi or (j.dpi if j else 600))
             fig.savefig(f'{stem}.{fmt}', format=fmt, **kw)
-    spec = width if isinstance(width, str) else getattr(fig, '_paperplot_width', None)
+    spec = width if isinstance(width, str) else getattr(fig, '_plottino_width', None)
     m = spec and re.fullmatch(r'\s*([0-9]*\.?[0-9]*)\s*\\?(textwidth|linewidth|columnwidth)\s*', spec)
     if m and not quiet:
         print(f'  LaTeX: \\includegraphics[width={m.group(1)}\\{m.group(2)}]{{{stem.name}}}')

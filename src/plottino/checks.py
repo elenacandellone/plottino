@@ -39,7 +39,7 @@ ALL_CHECKS = ('size', 'text_overlap', 'text_clipped', 'text_over_data', 'legend_
               'font_size', 'font_family', 'line_width', 'contrast', 'colors', 'colormap', 'labels')
 RAINBOW_CMAPS = {'jet', 'rainbow', 'hsv', 'gist_rainbow', 'nipy_spectral', 'gist_ncar', 'prism',
                  'flag', 'spectral', 'gist_stern'}
-HIGHLIGHT_GID = 'paperplot-highlight'
+HIGHLIGHT_GID = 'plottino-highlight'
 
 
 @dataclass
@@ -83,7 +83,7 @@ class Report:
     def __str__(self):
         w, h = self.fig.get_size_inches()
         sw, sh = self.saved_size
-        head = f'paperplot check: {self.journal.name}, figure {w:.2f} x {h:.2f} in'
+        head = f'plottino check: {self.journal.name}, figure {w:.2f} x {h:.2f} in'
         if abs(sw - w) > 0.01 or abs(sh - h) > 0.01:
             head += f', saved (tight) {sw:.2f} x {sh:.2f} in'
         if abs(self.target_width - sw) > 0.01:
@@ -135,13 +135,13 @@ def clear_highlights(fig):
 
 def ignore(artist, *checks):
     """Exempt an artist from some checks (all of them when none are named), e.g. a label
-    that sits on a bar on purpose: pp.ignore(ax.text(...), 'text_over_data')."""
-    artist._paperplot_ignore = set(checks) or set(ALL_CHECKS)
+    that sits on a bar on purpose: pt.ignore(ax.text(...), 'text_over_data')."""
+    artist._plottino_ignore = set(checks) or set(ALL_CHECKS)
     return artist
 
 
 def _ignored(artist, check):
-    return check in getattr(artist, '_paperplot_ignore', ())
+    return check in getattr(artist, '_plottino_ignore', ())
 
 
 # ----------------------------------------------------------------------------------------
@@ -386,7 +386,7 @@ def check(fig=None, journal=None, width=None, checks=None, skip=(), tolerance=0.
     journal: name or Journal (default: the figure's, else the one set by use()).
     width: the width the figure will be printed at, if not its own size: inches, a column
         name, or a fraction like r'0.5\\textwidth'. Font and line sizes are scaled to it.
-    checks / skip: run only / leave out these checks (see paperplot.checks.ALL_CHECKS).
+    checks / skip: run only / leave out these checks (see plottino.checks.ALL_CHECKS).
     tolerance: overlaps smaller than this (in points) are ignored.
     tight: the figure will be saved with bbox_inches='tight': the canvas is the tight box
         (text outside the figure is kept) and its size is what gets printed.
@@ -394,7 +394,7 @@ def check(fig=None, journal=None, width=None, checks=None, skip=(), tolerance=0.
     """
     import matplotlib.pyplot as plt
     fig = fig if fig is not None else plt.gcf()
-    j = journals.get(journal) if journal is not None else getattr(fig, '_paperplot_journal', current_journal())
+    j = journals.get(journal) if journal is not None else getattr(fig, '_plottino_journal', current_journal())
     run = set(checks or ALL_CHECKS) - set(skip)
     issues = []
 
@@ -424,7 +424,7 @@ def check(fig=None, journal=None, width=None, checks=None, skip=(), tolerance=0.
 
 
 def _size(fig, j, width, w, h, issues):
-    spec = width if width is not None else getattr(fig, '_paperplot_width', None)
+    spec = width if width is not None else getattr(fig, '_plottino_width', None)
     if spec is not None:
         target = j.width(spec)
         if abs(target - w) / target > 0.02:
@@ -591,7 +591,7 @@ def _check_font_family(j, texts, issues, **_):
     for name, ts in off.items():
         issues.append(Issue('font_family', 'info',
                             f'{len(ts)} text(s) set in {name}; {j.name} asks for {" or ".join(j.fonts[:2])} '
-                            '(install the font or use pp.use(), which picks the first one available)'))
+                            '(install the font or use pt.use(), which picks the first one available)'))
 
 
 def _check_line_width(fig, j, scale, issues, **_):

@@ -139,7 +139,7 @@ def get(journal) -> Journal:
         return JOURNALS[journal.lower()]
     except KeyError:
         raise ValueError(f'unknown journal {journal!r}; choose from {list(JOURNALS)} '
-                         'or pass a paperplot.Journal') from None
+                         'or pass a plottino.Journal') from None
 
 
 def register(key: str, journal: Journal):

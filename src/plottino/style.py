@@ -80,11 +80,11 @@ def use(journal='generic', declutter=True, seaborn=True):
 def use_latex(textwidth='article', fontsize=10, columnwidth=None, declutter=True, seaborn=True):
     """Style figures for a LaTeX document; widths become fractions of its text width.
 
-        pp.use_latex()                          # Overleaf article, 10pt
-        pp.use_latex(textwidth=r'6.5in', fontsize=11)
-        fig, ax = pp.figure(r'0.5\\textwidth')  # include with width=0.5\\textwidth
+        pt.use_latex()                          # Overleaf article, 10pt
+        pt.use_latex(textwidth=r'6.5in', fontsize=11)
+        fig, ax = pt.figure(r'0.5\\textwidth')  # include with width=0.5\\textwidth
 
-    See paperplot.journals.latex for the arguments.
+    See plottino.journals.latex for the arguments.
     """
     return use(journals.latex(textwidth, fontsize, columnwidth), declutter, seaborn)
 
@@ -102,7 +102,7 @@ def figure(width=None, height=None, aspect=0.62, journal=None, nrows=1, ncols=1,
     w = j.width(width)
     h = height if height is not None else w * aspect
     fig, axes = plt.subplots(nrows, ncols, figsize=(w, h), **kwargs)
-    fig._paperplot_journal = j
+    fig._plottino_journal = j
     if isinstance(width, str):
-        fig._paperplot_width = width
+        fig._plottino_width = width
     return fig, axes

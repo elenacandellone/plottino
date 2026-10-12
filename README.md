@@ -1,24 +1,24 @@
-# paperplot
+# plottino
 
-Paper-ready figures with matplotlib and seaborn. paperplot sets the figure to the size
+Paper-ready figures with matplotlib and seaborn. plottino sets the figure to the size
 it will be printed at, styles it for the journal (or your LaTeX document), and then
 **checks that it is legible**: no overlapping or cut-off labels, no text under data,
 no fonts or lines too small to print, no colours that colour-blind readers cannot tell
 apart.
 
 ```python
-import paperplot as pp
+import plottino as pt
 import seaborn as sns
 
-pp.use('science')                      # journal sizes + a decluttered style (also sets seaborn)
-fig, ax = pp.figure('double', aspect=0.5)
+pt.use('science')                      # journal sizes + a decluttered style (also sets seaborn)
+fig, ax = pt.figure('double', aspect=0.5)
 sns.lineplot(data=df, x='year', y='value', hue='group', ax=ax)
 ax.set(xlabel='Year', ylabel='Value (EUR)')
-pp.save(fig, 'plots/fig1')             # checks, then writes fig1.pdf and fig1.png
+pt.save(fig, 'plots/fig1')             # checks, then writes fig1.pdf and fig1.png
 ```
 
 ```
-paperplot check: Science, figure 4.76 x 2.38 in
+plottino check: Science, figure 4.76 x 2.38 in
   x error   text_overlap     x tick labels overlap in axes 0: use fewer ticks, rotate them or widen the panel
   ! warning legend_over_data the legend covers data in axes 0: move it (loc=, bbox_to_anchor=) or label the lines directly
   ! warning colors           #d62728 and #2ca02c look alike with deuteranopia (dE 4.1 < 6): change one, or add markers, line styles or direct labels
@@ -31,19 +31,19 @@ paperplot check: Science, figure 4.76 x 2.38 in
 Size figures as a fraction of the text width, as you would in `\includegraphics`:
 
 ```python
-pp.use_latex()                              # Overleaf default: article, 10pt (\textwidth = 345pt)
-pp.use_latex(textwidth='a4-1in', fontsize=11)   # geometry with 1in margins on A4
-pp.use_latex(textwidth=418.25)              # the value \the\textwidth prints in your document
-pp.use_latex(textwidth=505, columnwidth=241)    # two-column: also \linewidth / \columnwidth
+pt.use_latex()                              # Overleaf default: article, 10pt (\textwidth = 345pt)
+pt.use_latex(textwidth='a4-1in', fontsize=11)   # geometry with 1in margins on A4
+pt.use_latex(textwidth=418.25)              # the value \the\textwidth prints in your document
+pt.use_latex(textwidth=505, columnwidth=241)    # two-column: also \linewidth / \columnwidth
 
-fig, ax = pp.figure(r'0.5\textwidth')       # made at exactly half the text width
-pp.save(fig, 'fig2')                        # prints: \includegraphics[width=0.5\textwidth]{fig2}
+fig, ax = pt.figure(r'0.5\textwidth')       # made at exactly half the text width
+pt.save(fig, 'fig2')                        # prints: \includegraphics[width=0.5\textwidth]{fig2}
 ```
 
 The figure is built at its printed size and its text at the document's `\footnotesize`
 (8 pt in a 10 pt document), so LaTeX does not shrink anything: what you set is what is
 printed. A figure made at another size can still be checked at the size it will be used:
-`pp.check(fig, width=r'0.5\textwidth')` scales fonts and lines accordingly and flags any
+`pt.check(fig, width=r'0.5\textwidth')` scales fonts and lines accordingly and flags any
 that become too small.
 
 ## What is checked
@@ -67,24 +67,24 @@ Checks run on what matplotlib actually draws, so they work on any matplotlib or 
 figure. Use them directly:
 
 ```python
-report = pp.check(fig)             # or pp.check(fig, journal='nature', width='single')
+report = pt.check(fig)             # or pt.check(fig, journal='nature', width='single')
 print(report); report.ok           # ok = no errors
-report.highlight()                 # numbered red boxes on the figure; pp.clear_highlights(fig)
+report.highlight()                 # numbered red boxes on the figure; pt.clear_highlights(fig)
 report.raise_for_errors()          # e.g. in a test or CI
-pp.ignore(text, 'text_over_data')  # a label that sits on a bar on purpose
-pp.check(fig, skip=['font_family'])
+pt.ignore(text, 'text_over_data')  # a label that sits on a bar on purpose
+pt.check(fig, skip=['font_family'])
 ```
 
-`pp.save(fig, path, strict=True)` refuses to save a figure with errors.
+`pt.save(fig, path, strict=True)` refuses to save a figure with errors.
 
 **Saving with `bbox_inches='tight'`** keeps text that sticks out of the figure, but the
 saved file is then wider than designed, and shrinks when placed at the column width.
-`pp.save(fig, path, bbox_inches='tight')` (or `pp.check(fig, tight=True)`) checks the tight
+`pt.save(fig, path, bbox_inches='tight')` (or `pt.check(fig, tight=True)`) checks the tight
 canvas and reports the resulting scale, e.g. a 6 pt footnote that prints at 5.7 pt.
 
 ## Journal presets
 
-`science`, `nature`, `pnas`, `cell`, `generic`, plus `pp.latex(...)` for any LaTeX document.
+`science`, `nature`, `pnas`, `cell`, `generic`, plus `pt.latex(...)` for any LaTeX document.
 Each preset records its source page: guidelines change, so check them before submitting.
 
 | | widths | text | min line |
@@ -94,15 +94,15 @@ Each preset records its source page: guidelines change, so check them before sub
 | PNAS | 8.7 / 11.4 / 17.8 cm | 6-8 pt | 0.5 pt |
 | Cell | 85 / 114 / 174 mm | >= 6 pt | 0.5 pt |
 
-Add your own with `pp.journals.register('mykey', pp.Journal(...))`.
+Add your own with `pt.journals.register('mykey', pt.Journal(...))`.
 
 ## Helpers
 
-- `pp.panel_labels(axes)`: bold A, B, C (or a, b, c for Nature) at the panel corners
-- `pp.label_lines(ax)`: label lines at their right end instead of a legend, nudged apart
-- `pp.emphasize(ax, keep=['treated'])`: grey out everything but the series that carry the message
-- `pp.OKABE_ITO`: the default colour-blind-safe palette; `pp.GREY`, `pp.LIGHT`, `pp.TEXT`
-- `pp.colors.check_palette([...])`: colour pairs that are hard to tell apart
+- `pt.panel_labels(axes)`: bold A, B, C (or a, b, c for Nature) at the panel corners
+- `pt.label_lines(ax)`: label lines at their right end instead of a legend, nudged apart
+- `pt.emphasize(ax, keep=['treated'])`: grey out everything but the series that carry the message
+- `pt.OKABE_ITO`: the default colour-blind-safe palette; `pt.GREY`, `pt.LIGHT`, `pt.TEXT`
+- `pt.colors.check_palette([...])`: colour pairs that are hard to tell apart
 
 ## Examples
 

@@ -1,10 +1,10 @@
-"""paperplot: paper-ready matplotlib/seaborn figures, with checks that they are legible.
+"""plottino: paper-ready matplotlib/seaborn figures, with checks that they are legible.
 
-    import paperplot as pp
-    pp.use('science')                       # or pp.use_latex() for an Overleaf document
-    fig, ax = pp.figure('double')           # or pp.figure(r'0.5\\textwidth')
+    import plottino as pt
+    pt.use('science')                       # or pt.use_latex() for an Overleaf document
+    fig, ax = pt.figure('double')           # or pt.figure(r'0.5\\textwidth')
     ...
-    pp.save(fig, 'plots/fig1')              # checks, then writes fig1.pdf + fig1.png
+    pt.save(fig, 'plots/fig1')              # checks, then writes fig1.pdf + fig1.png
 """
 from . import colors, journals
 from .checks import ALL_CHECKS, FigureCheckError, Issue, Report, check, clear_highlights, ignore

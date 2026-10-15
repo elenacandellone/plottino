@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="512" height="512">
+  <rect width="128" height="128" rx="30" fill="#FFF6E5"/>
+  <clipPath id="pt-bars"><rect width="128" height="100"/></clipPath>
+  <g clip-path="url(#pt-bars)">
+  <rect x="25" y="72" width="19" height="40" rx="9.5" fill="#E69F00"/>
+  <rect x="49" y="54" width="19" height="58" rx="9.5" fill="#56B4E9"/>
+  <rect x="73" y="32" width="30" height="80" rx="13" fill="#009E73"/>
+  </g>
+  <circle cx="82.5" cy="52" r="3.4" fill="#2B2D42"/><circle cx="93.5" cy="52" r="3.4" fill="#2B2D42"/>
+  <circle cx="78.5" cy="60" r="3" fill="#CC79A7"/><circle cx="97.5" cy="60" r="3" fill="#CC79A7"/>
+  <path d="M84 59.5q4 4.5 8 0" fill="none" stroke="#2B2D42" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="M106 22l2.2 5.3 5.3 2.2-5.3 2.2-2.2 5.3-2.2-5.3-5.3-2.2 5.3-2.2z" fill="#D55E00"/>
+  <path d="M20 100H108" stroke="#2B2D42" stroke-width="7" stroke-linecap="round"/>
+</svg>

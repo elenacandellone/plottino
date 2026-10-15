@@ -1,4 +1,9 @@
-# plottino
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/logo/plottino-logo-dark.svg">
+    <img src="docs/img/logo/plottino-logo-light.svg" alt="plottino" width="360">
+  </picture>
+</h1>
 
 Paper-ready matplotlib and seaborn figures. plottino makes each figure at the size it will be
 printed, styles it for the journal or your LaTeX document, and **checks that it is legible**.
